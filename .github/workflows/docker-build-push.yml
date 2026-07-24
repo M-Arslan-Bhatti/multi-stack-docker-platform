@@ -49,7 +49,7 @@ jobs:
       - name: Build and push Frontend image
         uses: docker/build-push-action@v5
         with:
-          context: ./fullstack-text-storage/frontend
+          context: ./dashboard
           push: true
           tags: arslanbhatti123/fullstack-frontend:latest
 

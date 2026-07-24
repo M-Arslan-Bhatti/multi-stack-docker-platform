@@ -71,7 +71,13 @@ resource "aws_ecs_service" "backend" {
     assign_public_ip = true
   }
 
-  depends_on = [aws_db_instance.postgres]
+  load_balancer {
+    target_group_arn = aws_lb_target_group.backend.arn
+    container_name   = "backend-container"
+    container_port   = 5000
+  }
+
+  depends_on = [aws_db_instance.postgres, aws_lb_listener.backend]
 
   tags = {
     Name = "backend-service"

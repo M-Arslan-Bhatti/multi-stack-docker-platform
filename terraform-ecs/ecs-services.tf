@@ -13,6 +13,14 @@ resource "aws_ecs_service" "apps" {
     assign_public_ip = true
   }
 
+  load_balancer {
+    target_group_arn = aws_lb_target_group.apps[each.key].arn
+    container_name   = "${each.key}-container"
+    container_port   = each.value.port
+  }
+
+  depends_on = [aws_lb_listener.apps]
+
   tags = {
     Name = "${each.key}-service"
   }

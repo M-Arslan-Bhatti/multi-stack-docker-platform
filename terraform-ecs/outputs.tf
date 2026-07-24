@@ -5,3 +5,7 @@ output "ecs_cluster_name" {
 output "service_names" {
   value = [for s in aws_ecs_service.apps : s.name]
 }
+
+output "alb_dns_name" {
+  value = aws_lb.main.dns_name
+}
