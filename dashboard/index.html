@@ -373,6 +373,66 @@
   }
   .foot-author b{ color:var(--muted); font-weight:500; }
 
+  /* ---------- Live demo ---------- */
+  .demo-panel{
+    border:1px solid var(--border);
+    background:var(--panel);
+    border-radius:14px;
+    padding:22px;
+    margin-bottom:60px;
+  }
+  .demo-form{
+    display:flex;
+    gap:10px;
+    margin-bottom:14px;
+  }
+  .demo-input{
+    flex:1;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:14px;
+    color:var(--text);
+    background:var(--bg);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:10px 12px;
+  }
+  .demo-input:focus{
+    outline:none;
+    border-color:var(--cyan);
+  }
+  .demo-form .card-action{
+    cursor:pointer;
+  }
+  .demo-welcome{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    color:var(--cyan);
+    background:var(--cyan-dim);
+    border:1px solid var(--border-bright);
+    border-radius:8px;
+    padding:10px 12px;
+    margin-bottom:14px;
+  }
+  .demo-list{
+    margin-top:14px;
+    flex-direction:column;
+    gap:8px;
+  }
+  .demo-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    background:var(--bg);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:9px 12px;
+  }
+  .demo-row span{ color:var(--text); word-break:break-word; }
+  .demo-row small{ color:var(--dim); white-space:nowrap; }
+
   @keyframes pulse{
     0%,100%{ box-shadow:0 0 0 3px var(--green-dim); }
     50%{ box-shadow:0 0 0 6px transparent; }
@@ -434,7 +494,7 @@
     <!-- Service grid -->
     <div class="section-head">
       <div class="section-title">Services</div>
-      <div class="section-count">5 running · 1 redeploying</div>
+      <div class="section-count">6 running</div>
     </div>
 
     <div class="grid">
@@ -534,13 +594,29 @@
               <div class="card-stack">react + nginx · port 80</div>
             </div>
           </div>
-          <div class="status attention">redeploying</div>
+          <div class="status running">running</div>
         </div>
         <div class="card-endpoint"><b>multi-stack-alb-2116419481.us-east-1.elb.amazonaws.com</b>:80</div>
-        <p class="card-note">This slot now serves this static dashboard instead of the React app — the React app's <code style="font-family:inherit">proxy_pass http://backend</code> only resolved inside Docker Compose, not on ECS. CI redeploy pending after this push.</p>
+        <p class="card-note">This slot now serves this static dashboard instead of the React app — the React app's <code style="font-family:inherit">proxy_pass http://backend</code> only resolved inside Docker Compose, not on ECS.</p>
         <a class="card-action" href="http://multi-stack-alb-2116419481.us-east-1.elb.amazonaws.com:80" target="_blank" rel="noopener">Open service ↗</a>
       </div>
 
+    </div>
+
+    <!-- Live demo -->
+    <div class="section-head">
+      <div class="section-title">Live demo</div>
+      <div class="section-count">talks straight to the backend API</div>
+    </div>
+
+    <div class="demo-panel">
+      <form id="entry-form" class="demo-form">
+        <input id="entry-input" class="demo-input" type="text" placeholder="Type something..." autocomplete="off" required>
+        <button class="card-action" type="submit">Enter</button>
+      </form>
+      <div id="entry-welcome" class="demo-welcome" style="display:none;"></div>
+      <button id="show-db-btn" class="card-action" type="button">Show database ↓</button>
+      <div id="entry-list" class="demo-list" style="display:none;"></div>
     </div>
 
     <div class="foot">
@@ -555,5 +631,74 @@
     </div>
 
   </div>
+
+<script>
+(function(){
+  var API_BASE = 'http://multi-stack-alb-2116419481.us-east-1.elb.amazonaws.com:5001';
+  var form = document.getElementById('entry-form');
+  var input = document.getElementById('entry-input');
+  var welcome = document.getElementById('entry-welcome');
+  var listEl = document.getElementById('entry-list');
+  var showBtn = document.getElementById('show-db-btn');
+  var dbVisible = false;
+
+  function renderEntries(entries){
+    listEl.innerHTML = '';
+    if (!entries.length){
+      var empty = document.createElement('div');
+      empty.className = 'demo-row';
+      empty.textContent = 'No entries yet.';
+      listEl.appendChild(empty);
+      return;
+    }
+    entries.forEach(function(e){
+      var row = document.createElement('div');
+      row.className = 'demo-row';
+      var span = document.createElement('span');
+      span.textContent = e.text;
+      var small = document.createElement('small');
+      small.textContent = new Date(e.created_at).toLocaleString();
+      row.appendChild(span);
+      row.appendChild(small);
+      listEl.appendChild(row);
+    });
+  }
+
+  function loadEntries(){
+    return fetch(API_BASE + '/list')
+      .then(function(res){ return res.json(); })
+      .then(function(data){ renderEntries(data.entries || []); });
+  }
+
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    var text = input.value.trim();
+    if (!text) return;
+    fetch(API_BASE + '/insert', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({text: text})
+    })
+      .then(function(res){ return res.json(); })
+      .then(function(data){
+        welcome.style.display = 'block';
+        welcome.textContent = 'Welcome, ' + data.text + '!';
+        input.value = '';
+        if (dbVisible) return loadEntries();
+      })
+      .catch(function(){
+        welcome.style.display = 'block';
+        welcome.textContent = 'Could not reach the backend — try again.';
+      });
+  });
+
+  showBtn.addEventListener('click', function(){
+    dbVisible = !dbVisible;
+    listEl.style.display = dbVisible ? 'flex' : 'none';
+    showBtn.textContent = dbVisible ? 'Hide database ↑' : 'Show database ↓';
+    if (dbVisible) loadEntries();
+  });
+})();
+</script>
 </body>
 </html>
