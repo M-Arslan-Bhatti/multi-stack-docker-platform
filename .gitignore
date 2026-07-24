@@ -1,0 +1,10 @@
+# Terraform
+terraform-ecs/.terraform/
+terraform-ecs/*.tfstate
+terraform-ecs/*.tfstate.backup
+terraform-ecs/.terraform.lock.hcl
+terraform-ecs/terraform.tfvars
+
+# Session manager plugin (accidentally downloaded here)
+terraform-ecs/session-manager-plugin/
+terraform-ecs/session-manager-plugin.zip

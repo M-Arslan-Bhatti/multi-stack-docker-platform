@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>multi-stack-docker-platform — Fleet Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0B0F14;
+    --panel:#121821;
+    --panel-hover:#161D27;
+    --border:#1C2733;
+    --border-bright:#28374A;
+    --text:#E6EDF3;
+    --muted:#7D8B99;
+    --dim:#4B5A68;
+    --cyan:#22D3EE;
+    --cyan-dim:rgba(34,211,238,0.12);
+    --green:#3FB950;
+    --green-dim:rgba(63,185,80,0.12);
+    --amber:#F2C94C;
+    --amber-dim:rgba(242,201,76,0.12);
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+
+  body{
+    margin:0;
+    background:
+      radial-gradient(ellipse 900px 500px at 15% -10%, rgba(34,211,238,0.06), transparent),
+      radial-gradient(ellipse 700px 500px at 100% 10%, rgba(63,185,80,0.04), transparent),
+      var(--bg);
+    color:var(--text);
+    font-family:'IBM Plex Sans', sans-serif;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  a{color:inherit;}
+  a:focus-visible, button:focus-visible{
+    outline:2px solid var(--cyan);
+    outline-offset:2px;
+    border-radius:4px;
+  }
+
+  .wrap{
+    max-width:1180px;
+    margin:0 auto;
+    padding:56px 24px 80px;
+  }
+
+  /* ---------- Header ---------- */
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--cyan);
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:18px;
+  }
+  .eyebrow::before{
+    content:'';
+    width:7px;height:7px;
+    background:var(--green);
+    border-radius:50%;
+    box-shadow:0 0 0 3px var(--green-dim);
+    animation:pulse 2.2s ease-in-out infinite;
+  }
+
+  h1{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:700;
+    font-size:clamp(32px, 5vw, 52px);
+    line-height:1.05;
+    letter-spacing:-0.02em;
+    margin:0 0 14px;
+  }
+  h1 span{color:var(--muted);}
+
+  .sub{
+    color:var(--muted);
+    font-size:16px;
+    line-height:1.6;
+    max-width:640px;
+    margin:0 0 36px;
+  }
+  .sub code{
+    font-family:'IBM Plex Mono', monospace;
+    background:var(--panel);
+    border:1px solid var(--border);
+    padding:1px 6px;
+    border-radius:4px;
+    font-size:14px;
+    color:var(--cyan);
+  }
+
+  .meta-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-bottom:56px;
+  }
+  .pill{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    color:var(--muted);
+    border:1px solid var(--border);
+    background:var(--panel);
+    padding:6px 12px;
+    border-radius:20px;
+    display:flex;
+    align-items:center;
+    gap:7px;
+  }
+  .pill b{color:var(--text);font-weight:500;}
+
+  /* ---------- Topology strip ---------- */
+  .topo{
+    border:1px solid var(--border);
+    background:var(--panel);
+    border-radius:14px;
+    padding:28px 24px 22px;
+    margin-bottom:64px;
+    overflow-x:auto;
+  }
+  .topo-label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--dim);
+    margin-bottom:22px;
+  }
+  .topo-row{
+    display:flex;
+    align-items:center;
+    min-width:640px;
+  }
+  .topo-node{
+    flex-shrink:0;
+    text-align:center;
+    width:110px;
+  }
+  .topo-node .icon{
+    width:52px;height:52px;
+    border-radius:12px;
+    border:1px solid var(--border-bright);
+    background:linear-gradient(180deg, var(--panel-hover), var(--panel));
+    display:flex;align-items:center;justify-content:center;
+    margin:0 auto 10px;
+    font-size:20px;
+  }
+  .topo-node .name{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    color:var(--text);
+  }
+  .topo-node .role{
+    font-size:10px;
+    color:var(--dim);
+    margin-top:2px;
+  }
+  .topo-line{
+    flex:1;
+    height:1px;
+    background:repeating-linear-gradient(90deg, var(--border-bright) 0 6px, transparent 6px 12px);
+    position:relative;
+    top:-20px;
+  }
+  .topo-line::after{
+    content:'▸';
+    position:absolute;
+    right:-2px; top:50%;
+    transform:translateY(-50%);
+    color:var(--cyan);
+    font-size:11px;
+    animation:travel 3s linear infinite;
+  }
+
+  @keyframes travel{
+    0%{opacity:0; right:95%;}
+    10%{opacity:1;}
+    90%{opacity:1;}
+    100%{opacity:0; right:-2px;}
+  }
+
+  /* ---------- Service grid ---------- */
+  .section-head{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    margin-bottom:22px;
+    flex-wrap:wrap;
+    gap:10px;
+  }
+  .section-title{
+    font-family:'Space Grotesk', sans-serif;
+    font-size:22px;
+    font-weight:600;
+  }
+  .section-count{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    color:var(--muted);
+  }
+
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:16px;
+    margin-bottom:60px;
+  }
+  @media (max-width:900px){ .grid{grid-template-columns:repeat(2, 1fr);} }
+  @media (max-width:600px){ .grid{grid-template-columns:1fr;} }
+
+  .card{
+    border:1px solid var(--border);
+    background:var(--panel);
+    border-radius:14px;
+    padding:22px;
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+    transition:border-color .2s ease, transform .2s ease, background .2s ease;
+    position:relative;
+    overflow:hidden;
+  }
+  .card::before{
+    content:'';
+    position:absolute; inset:0;
+    background:linear-gradient(135deg, rgba(34,211,238,0.05), transparent 40%);
+    opacity:0;
+    transition:opacity .25s ease;
+    pointer-events:none;
+  }
+  .card:hover{
+    border-color:var(--border-bright);
+    background:var(--panel-hover);
+    transform:translateY(-2px);
+  }
+  .card:hover::before{opacity:1;}
+
+  .card-top{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+  }
+  .card-id{
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .card-icon{
+    width:34px;height:34px;
+    border-radius:8px;
+    border:1px solid var(--border-bright);
+    display:flex;align-items:center;justify-content:center;
+    font-size:15px;
+    background:var(--bg);
+  }
+  .card-name{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:600;
+    font-size:16px;
+  }
+  .card-stack{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    color:var(--dim);
+    margin-top:1px;
+  }
+
+  .status{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    padding:4px 9px;
+    border-radius:20px;
+    white-space:nowrap;
+  }
+  .status::before{
+    content:'';
+    width:6px;height:6px;
+    border-radius:50%;
+  }
+  .status.running{ color:var(--green); background:var(--green-dim); }
+  .status.running::before{ background:var(--green); box-shadow:0 0 0 2.5px var(--green-dim); animation:pulse 2.2s ease-in-out infinite; }
+  .status.attention{ color:var(--amber); background:var(--amber-dim); }
+  .status.attention::before{ background:var(--amber); box-shadow:0 0 0 2.5px var(--amber-dim); }
+
+  .card-endpoint{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    color:var(--muted);
+    background:var(--bg);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:9px 11px;
+    word-break:break-all;
+  }
+  .card-endpoint b{ color:var(--text); font-weight:500; }
+
+  .card-note{
+    font-size:12.5px;
+    color:var(--dim);
+    line-height:1.5;
+    margin:-6px 0 0;
+  }
+
+  .card-action{
+    margin-top:auto;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:7px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    font-weight:500;
+    padding:10px 14px;
+    border-radius:8px;
+    border:1px solid var(--border-bright);
+    background:transparent;
+    text-decoration:none;
+    color:var(--text);
+    transition:all .15s ease;
+  }
+  .card-action:hover{
+    background:var(--cyan-dim);
+    border-color:var(--cyan);
+    color:var(--cyan);
+  }
+  .card-action.disabled{
+    opacity:0.45;
+    pointer-events:none;
+    border-style:dashed;
+  }
+
+  /* ---------- Footer / stack strip ---------- */
+  .foot{
+    border-top:1px solid var(--border);
+    padding-top:28px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:16px;
+  }
+  .foot-stack{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+  }
+  .stack-chip{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    color:var(--muted);
+    border:1px solid var(--border);
+    padding:5px 10px;
+    border-radius:6px;
+  }
+  .foot-author{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    color:var(--dim);
+  }
+  .foot-author b{ color:var(--muted); font-weight:500; }
+
+  @keyframes pulse{
+    0%,100%{ box-shadow:0 0 0 3px var(--green-dim); }
+    50%{ box-shadow:0 0 0 6px transparent; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none !important; transition:none !important;}
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+
+    <div class="eyebrow">multi-stack-docker-platform · live on aws ecs fargate</div>
+    <h1>Container fleet,<br><span>online.</span></h1>
+    <p class="sub">
+      Six services, one <code>for_each</code> block. Provisioned with Terraform, shipped through a
+      <code>GitHub Actions</code> CI pipeline into Docker Hub, and scheduled onto <code>AWS ECS Fargate</code> —
+      no EC2 instances managed by hand.
+    </p>
+
+    <div class="meta-row">
+      <div class="pill">cluster <b>multi-stack-cluster</b></div>
+      <div class="pill">region <b>us-east-1</b></div>
+      <div class="pill">launch type <b>FARGATE</b></div>
+      <div class="pill">database <b>RDS PostgreSQL 16</b></div>
+    </div>
+
+    <!-- Topology -->
+    <div class="topo">
+      <div class="topo-label">request &amp; deployment flow</div>
+      <div class="topo-row">
+        <div class="topo-node">
+          <div class="icon">⎇</div>
+          <div class="name">GitHub</div>
+          <div class="role">source + CI</div>
+        </div>
+        <div class="topo-line"></div>
+        <div class="topo-node">
+          <div class="icon">🐳</div>
+          <div class="name">Docker Hub</div>
+          <div class="role">image registry</div>
+        </div>
+        <div class="topo-line"></div>
+        <div class="topo-node">
+          <div class="icon">▤</div>
+          <div class="name">ECS Fargate</div>
+          <div class="role">6 services</div>
+        </div>
+        <div class="topo-line"></div>
+        <div class="topo-node">
+          <div class="icon">⛁</div>
+          <div class="name">RDS Postgres</div>
+          <div class="role">textstorage-db</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Service grid -->
+    <div class="section-head">
+      <div class="section-title">Services</div>
+      <div class="section-count">5 running · 1 needs attention</div>
+    </div>
+
+    <div class="grid">
+
+      <!-- Nginx -->
+      <div class="card">
+        <div class="card-top">
+          <div class="card-id">
+            <div class="card-icon">▣</div>
+            <div>
+              <div class="card-name">nginx</div>
+              <div class="card-stack">nginx:alpine · port 81</div>
+            </div>
+          </div>
+          <div class="status running">running</div>
+        </div>
+        <div class="card-endpoint"><b>32.198.93.133</b>:81</div>
+        <p class="card-note">Static site, served straight from a two-line Dockerfile.</p>
+        <a class="card-action" href="http://32.198.93.133:81" target="_blank" rel="noopener">Open service ↗</a>
+      </div>
+
+      <!-- Node.js -->
+      <div class="card">
+        <div class="card-top">
+          <div class="card-id">
+            <div class="card-icon">⬡</div>
+            <div>
+              <div class="card-name">nodejs</div>
+              <div class="card-stack">node:20-slim · port 3000</div>
+            </div>
+          </div>
+          <div class="status running">running</div>
+        </div>
+        <div class="card-endpoint"><b>3.215.184.188</b>:3000</div>
+        <p class="card-note">Runs as a non-root user inside the container.</p>
+        <a class="card-action" href="http://3.215.184.188:3000" target="_blank" rel="noopener">Open service ↗</a>
+      </div>
+
+      <!-- Flask -->
+      <div class="card">
+        <div class="card-top">
+          <div class="card-id">
+            <div class="card-icon">◐</div>
+            <div>
+              <div class="card-name">flask</div>
+              <div class="card-stack">python:3.11-slim · port 5000</div>
+            </div>
+          </div>
+          <div class="status running">running</div>
+        </div>
+        <div class="card-endpoint"><b>34.239.133.85</b>:5000</div>
+        <p class="card-note">Served by Gunicorn — not the Flask dev server.</p>
+        <a class="card-action" href="http://34.239.133.85:5000" target="_blank" rel="noopener">Open service ↗</a>
+      </div>
+
+      <!-- Java -->
+      <div class="card">
+        <div class="card-top">
+          <div class="card-id">
+            <div class="card-icon">☕</div>
+            <div>
+              <div class="card-name">java / tomcat</div>
+              <div class="card-stack">tomcat:10.1-jdk17 · port 8080</div>
+            </div>
+          </div>
+          <div class="status running">running</div>
+        </div>
+        <div class="card-endpoint"><b>34.200.213.157</b>:8080/hello</div>
+        <p class="card-note">Multi-stage build — Maven compiles the WAR, Tomcat only ships the artifact.</p>
+        <a class="card-action" href="http://34.200.213.157:8080/hello" target="_blank" rel="noopener">Open service ↗</a>
+      </div>
+
+      <!-- Backend -->
+      <div class="card">
+        <div class="card-top">
+          <div class="card-id">
+            <div class="card-icon">⌁</div>
+            <div>
+              <div class="card-name">backend api</div>
+              <div class="card-stack">flask + psycopg2 · port 5000</div>
+            </div>
+          </div>
+          <div class="status running">running</div>
+        </div>
+        <div class="card-endpoint"><b>3.82.119.35</b>:5000/list</div>
+        <p class="card-note">Reads and writes to the RDS <code style="font-family:inherit">entries</code> table over the internal VPC.</p>
+        <a class="card-action" href="http://3.82.119.35:5000/list" target="_blank" rel="noopener">Open /list ↗</a>
+      </div>
+
+      <!-- Frontend -->
+      <div class="card">
+        <div class="card-top">
+          <div class="card-id">
+            <div class="card-icon">▲</div>
+            <div>
+              <div class="card-name">frontend</div>
+              <div class="card-stack">react + nginx · port 80</div>
+            </div>
+          </div>
+          <div class="status attention">attention</div>
+        </div>
+        <div class="card-endpoint">upstream "backend" unresolved</div>
+        <p class="card-note">Nginx proxy expects a <code style="font-family:inherit">backend</code> DNS name — that only exists inside Docker Compose networking, not ECS. Fix: put an ALB in front of the backend service.</p>
+        <a class="card-action disabled" href="#">Pending ALB ↗</a>
+      </div>
+
+    </div>
+
+    <div class="foot">
+      <div class="foot-author">Muhammad Arslan — DevOps Engineer · <b>github.com/M-Arslan-Bhatti</b></div>
+      <div class="foot-stack">
+        <div class="stack-chip">Terraform</div>
+        <div class="stack-chip">Docker</div>
+        <div class="stack-chip">AWS ECS Fargate</div>
+        <div class="stack-chip">RDS</div>
+        <div class="stack-chip">GitHub Actions</div>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>
