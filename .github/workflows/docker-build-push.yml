@@ -1,0 +1,61 @@
+name: Build and Push Docker Images
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push Nginx image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./nginx
+          push: true
+          tags: arslanbhatti123/nginx-app:latest
+
+      - name: Build and push Node.js image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./nodejs
+          push: true
+          tags: arslanbhatti123/nodejs-app:latest
+
+      - name: Build and push Flask image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./flask
+          push: true
+          tags: arslanbhatti123/flask-app:latest
+
+      - name: Build and push Java image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./java
+          push: true
+          tags: arslanbhatti123/java-app:latest
+
+      - name: Build and push Frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./fullstack-text-storage/frontend
+          push: true
+          tags: arslanbhatti123/fullstack-frontend:latest
+
+      - name: Build and push Backend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./fullstack-text-storage/backend
+          push: true
+          tags: arslanbhatti123/fullstack-backend:latest
