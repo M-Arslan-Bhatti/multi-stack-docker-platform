@@ -34,6 +34,28 @@ def get_connection(retries=5, delay=2):
     raise last_error
 
 
+def ensure_schema():
+    """Create the entries table if it doesn't exist yet (fresh RDS/Postgres instance)."""
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                CREATE TABLE IF NOT EXISTS entries (
+                    id SERIAL PRIMARY KEY,
+                    content VARCHAR(1000) NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+                """
+            )
+            conn.commit()
+    finally:
+        conn.close()
+
+
+ensure_schema()
+
+
 @app.route("/health")
 def health():
     return jsonify(status="ok")
