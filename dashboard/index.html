@@ -511,9 +511,9 @@
           </div>
           <div class="status running">running</div>
         </div>
-        <div class="card-endpoint"><b>multi-stack-alb-2116419481.us-east-1.elb.amazonaws.com</b>:81</div>
+        <div class="card-endpoint"><b>multi-stack-alb-1111666502.us-east-1.elb.amazonaws.com</b>:81</div>
         <p class="card-note">Static site, served straight from a two-line Dockerfile.</p>
-        <a class="card-action" href="http://multi-stack-alb-2116419481.us-east-1.elb.amazonaws.com:81" target="_blank" rel="noopener">Open service ↗</a>
+        <a class="card-action" href="http://multi-stack-alb-1111666502.us-east-1.elb.amazonaws.com:81" target="_blank" rel="noopener">Open service ↗</a>
       </div>
 
       <!-- Node.js -->
@@ -528,9 +528,9 @@
           </div>
           <div class="status running">running</div>
         </div>
-        <div class="card-endpoint"><b>multi-stack-alb-2116419481.us-east-1.elb.amazonaws.com</b>:3000</div>
+        <div class="card-endpoint"><b>multi-stack-alb-1111666502.us-east-1.elb.amazonaws.com</b>:3000</div>
         <p class="card-note">Runs as a non-root user inside the container.</p>
-        <a class="card-action" href="http://multi-stack-alb-2116419481.us-east-1.elb.amazonaws.com:3000" target="_blank" rel="noopener">Open service ↗</a>
+        <a class="card-action" href="http://multi-stack-alb-1111666502.us-east-1.elb.amazonaws.com:3000" target="_blank" rel="noopener">Open service ↗</a>
       </div>
 
       <!-- Flask -->
@@ -545,9 +545,9 @@
           </div>
           <div class="status running">running</div>
         </div>
-        <div class="card-endpoint"><b>multi-stack-alb-2116419481.us-east-1.elb.amazonaws.com</b>:5000</div>
+        <div class="card-endpoint"><b>multi-stack-alb-1111666502.us-east-1.elb.amazonaws.com</b>:5000</div>
         <p class="card-note">Served by Gunicorn — not the Flask dev server.</p>
-        <a class="card-action" href="http://multi-stack-alb-2116419481.us-east-1.elb.amazonaws.com:5000" target="_blank" rel="noopener">Open service ↗</a>
+        <a class="card-action" href="http://multi-stack-alb-1111666502.us-east-1.elb.amazonaws.com:5000" target="_blank" rel="noopener">Open service ↗</a>
       </div>
 
       <!-- Java -->
@@ -562,9 +562,9 @@
           </div>
           <div class="status running">running</div>
         </div>
-        <div class="card-endpoint"><b>multi-stack-alb-2116419481.us-east-1.elb.amazonaws.com</b>:8080/hello</div>
+        <div class="card-endpoint"><b>multi-stack-alb-1111666502.us-east-1.elb.amazonaws.com</b>:8080/hello</div>
         <p class="card-note">Multi-stage build — Maven compiles the WAR, Tomcat only ships the artifact.</p>
-        <a class="card-action" href="http://multi-stack-alb-2116419481.us-east-1.elb.amazonaws.com:8080/hello" target="_blank" rel="noopener">Open service ↗</a>
+        <a class="card-action" href="http://multi-stack-alb-1111666502.us-east-1.elb.amazonaws.com:8080/hello" target="_blank" rel="noopener">Open service ↗</a>
       </div>
 
       <!-- Backend -->
@@ -579,9 +579,9 @@
           </div>
           <div class="status running">running</div>
         </div>
-        <div class="card-endpoint"><b>multi-stack-alb-2116419481.us-east-1.elb.amazonaws.com</b>:5001/list</div>
+        <div class="card-endpoint"><b>multi-stack-alb-1111666502.us-east-1.elb.amazonaws.com</b>:5001/list</div>
         <p class="card-note">Reads and writes to the RDS <code style="font-family:inherit">entries</code> table over the internal VPC.</p>
-        <a class="card-action" href="http://multi-stack-alb-2116419481.us-east-1.elb.amazonaws.com:5001/list" target="_blank" rel="noopener">Open /list ↗</a>
+        <a class="card-action" href="http://multi-stack-alb-1111666502.us-east-1.elb.amazonaws.com:5001/list" target="_blank" rel="noopener">Open /list ↗</a>
       </div>
 
       <!-- Frontend -->
@@ -596,9 +596,9 @@
           </div>
           <div class="status running">running</div>
         </div>
-        <div class="card-endpoint"><b>multi-stack-alb-2116419481.us-east-1.elb.amazonaws.com</b>:80</div>
+        <div class="card-endpoint"><b>multi-stack-alb-1111666502.us-east-1.elb.amazonaws.com</b>:80</div>
         <p class="card-note">This slot now serves this static dashboard instead of the React app — the React app's <code style="font-family:inherit">proxy_pass http://backend</code> only resolved inside Docker Compose, not on ECS.</p>
-        <a class="card-action" href="http://multi-stack-alb-2116419481.us-east-1.elb.amazonaws.com:80" target="_blank" rel="noopener">Open service ↗</a>
+        <a class="card-action" href="http://multi-stack-alb-1111666502.us-east-1.elb.amazonaws.com:80" target="_blank" rel="noopener">Open service ↗</a>
       </div>
 
     </div>
@@ -634,7 +634,7 @@
 
 <script>
 (function(){
-  var API_BASE = 'http://multi-stack-alb-2116419481.us-east-1.elb.amazonaws.com:5001';
+  var API_BASE = 'http://multi-stack-alb-1111666502.us-east-1.elb.amazonaws.com:5001';
   var form = document.getElementById('entry-form');
   var input = document.getElementById('entry-input');
   var welcome = document.getElementById('entry-welcome');
